@@ -1,12 +1,12 @@
 import React from 'react';
 import { BallTriangle } from 'react-loader-spinner'
-import { Overlay } from 'components/06_Modal/Modal.styled';
+import { Overlay } from 'components/Modal/Modal.styled';
 import { createPortal } from 'react-dom';
 
 
 const modalRoot = document.querySelector('#modal-root');
 
-export const Loader = props => {
+export default function Loader (props) {
   return createPortal(
       <Overlay>
       <BallTriangle

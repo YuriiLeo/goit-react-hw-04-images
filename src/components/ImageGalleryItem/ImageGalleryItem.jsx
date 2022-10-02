@@ -1,24 +1,19 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from "prop-types";
 import { Item, Image } from './ImageGalleryItem.styled';
 
-export default class ImageGalleryItem extends Component {
+export default function ImageGalleryItem({ id, img, onClick, imgLarge }) {
 
-      clckHendler = () => {
-        this.props.onClick(this.props.imgLarge);
+    const clckHendler = () => {
+        onClick(imgLarge);
     }
 
-  render() {
-    const { id, img } = this.props;
-    const { clckHendler } = this;
-    return (
+  return (
     <Item key={id}>
        <Image onClick={clckHendler} src={img} alt="" />
     </Item>
     )
-  }
 }
-
 
 ImageGalleryItem.propTypes = {
   onClick: PropTypes.func,

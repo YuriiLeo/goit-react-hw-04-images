@@ -1,115 +1,83 @@
-import Searchbar from "../01_Searchbar/Searchbar";
-import ImageGallery  from 'components/02_ImageGallery/ImageGallery';
-import {Loader} from 'components/04_Loader/Loader';
+import Searchbar from "../Searchbar/Searchbar";
+import ImageGallery  from 'components/ImageGallery/ImageGallery';
+import Loader from 'components/Loader/Loader';
 import { searchPixabayAPI } from 'components/services/ApiPixabay';
 import { AppWrapper } from "./App.styled";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Button from "components/05_Button/Button";
-import Modal from "components/06_Modal/Modal";
-import Warnings from "components/07_Warnings/Warnings";
+import Button from "components/Button/Button";
+import Modal from "components/Modal/Modal";
+import Warnings from "components/Warnings/Warnings";
 
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 
-export default class App extends Component {
 
-    state = {
-      images: [],
-      totalImages: 0,
-      bigImagePath: "",
-      isLoading: false,
-      error: null,
-      search: "",
-      page: 1,
-      notFound: false,
-      
-  }
+export default function App() {
+
+  const [images, setImages] = useState([]);
+  const [totalImages, setTotalImages] = useState(0);
+  const [bigImagePath, setBigImagePath] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [notFound, setNotFound] = useState(false);
   
-    componentDidUpdate(_, prevState) {
-    const { search, page } = this.state;
-    if ((search && prevState.search !== search) || page > prevState.page) {
-      this.fetchImages(search, page);
-    }
+  useEffect(() => {
+  const fetchImages = async () =>  {
+    setIsLoading(true);
     
-  }
-
-    onSearch = search => {
-      this.setState({
-      images: [],
-      search,
-      page: 1,
-    })
-  }
-
-    async fetchImages() {
-    const { search, page } = this.state;
-    this.setState({
-      isLoading: true,
-    });
-      
       try {
         const data = await searchPixabayAPI(search, page);
-        console.log(data);
+
         if (data.hits.length === 0) {
-          this.setState(({ notFound }) => {
-            return {
-              notFound: true
-            }
-          })
+          setNotFound(true);
         } else {
-          this.setState(({ images, notFound, totalImages }) => {
-            return {
-              images: [...images, ...data.hits],
-              notFound: false,
-              totalImages: data.totalHits,
-            }
-          })
+          setImages((prevImages) => {
+            return [...prevImages, ...data.hits]
+          });
+          setNotFound(false);
+          setTotalImages(data.totalHits);
         }
       } catch (error) {
         console.log(error);
-        this.setState({
-        error
-      })
+        setError(error);
       }
-      finally  {this.setState({
-        isLoading:false
-      })
+      finally {
+        setIsLoading(false);
       }
+    }
+    
+    if (search) {
+       fetchImages();
+    }
+}, [search, page])
+
+
+
+  const onSearch = search => {
+    setImages([]);
+    setSearch(search);
+    setPage(1);
   }
 
-
-  loadMore = () => {
-    this.setState(({ page }) => {
-      return {
-        page: page + 1,
-
-      }
-    })
-  
+const loadMore = () => {
+  setPage((prevPage) => prevPage + 1);
   }
   
   
-  toggleModal = (path) => {
-    this.setState({
-      bigImagePath: path,
-    })
+const toggleModal = (path) => {
+  setBigImagePath(path);
   }
 
-  
-  render() {
-    const { images, isLoading, error, bigImagePath, notFound, totalImages } = this.state;
-    const { loadMore, onSearch, toggleModal } = this;
     const isImages = Boolean(images.length);
-    console.log("ImL", images.length);
-    console.log("TI", totalImages);
-    return (
-          <AppWrapper>
+
+  return (
+      <AppWrapper>
         <Searchbar onSearch={onSearch} />
         <ToastContainer position="top-right" autoClose={5000} />
         {notFound && <Warnings text="Nothing found for this query, try again"/>}
-        {bigImagePath && (<Modal onClick={toggleModal} path={bigImagePath}>
-          <img src={bigImagePath} alt="" />
-        </Modal>)}
+        {bigImagePath && (<Modal onClick={toggleModal} path={bigImagePath}/>)}
         {isLoading && <Loader/>}
         {error && <Warnings text="Please, try again later"/>}
         {!isImages && !notFound && <Warnings text="Enter key word for images search"/>}
@@ -117,6 +85,4 @@ export default class App extends Component {
         {(isImages && images.length < totalImages) && <Button loadMore={loadMore} />}
     </AppWrapper>
     )
-  }
 }
-

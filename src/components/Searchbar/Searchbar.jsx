@@ -1,23 +1,20 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from "prop-types";
 import { SearchbarHeader, SearchForm, Button, Label, Input, } from './Searchbar.styled';
 import { MdOutlineImageSearch } from "react-icons/md";
 import { toast } from 'react-toastify'; 
 
-export default class Searchbar extends Component {
-  
-    state = {
-      search: "",
-      
+export default function Searchbar({onSearch}) {
+  const [search, setSearch] = useState("");
+
+  const handleChange = (e) => {
+    const { value } = e.target;
+    setSearch(value.toLowerCase());
   }
 
-     handleChange = (e) => {
-       this.setState({ search: e.currentTarget.value.toLowerCase() });
-  }
-
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (this.state.search.trim() === "") {
+    if (search.trim() === "") {
       toast.warn('The search field is empty', {
         position: "top-center",
         autoClose: 5000,
@@ -29,22 +26,15 @@ export default class Searchbar extends Component {
       });
       return;
     }
-    this.props.onSearch(this.state.search.trim());
-    this.reset();
+    onSearch(search.trim());
+    reset();
   }
   
-  reset() {
-    this.setState({
-      search: "" 
-    })
-  }
+  const reset = () => {
+    setSearch("");
+  }  
 
- 
-  render() {
-    const { search } = this.state;
-    const { handleSubmit, handleChange } = this;
-
-    return (
+  return (
       <SearchbarHeader>
        <SearchForm onSubmit={handleSubmit}>
           <Button type="submit" onClick={handleSubmit}>
@@ -63,9 +53,7 @@ export default class Searchbar extends Component {
         </SearchForm>
       </SearchbarHeader>
     )
-  }
 }
-
 
 
 Searchbar.propTypes = {
